@@ -10,6 +10,7 @@ services:
     ports:
       - "443:443"
       - "8888:8888"
+    command: []
     environment:
       - SECRET=${MTPROXY_SECRET}
       - WORKERS=1

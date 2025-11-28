@@ -22,6 +22,18 @@ The tests are configured via environment variables. You can set these in your sh
 - `TELEGRAM_API_ID`: Your Telegram API ID (get from https://my.telegram.org).
 - `TELEGRAM_API_HASH`: Your Telegram API Hash.
 
+## Manual Connectivity Check
+
+If tests are failing with timeouts, you can manually verify connectivity to Telegram servers from your environment (or inside the Docker container):
+
+```bash
+# Check connectivity to Telegram DC 2 (Europe)
+nc -zv 149.154.167.50 443
+# Expected output: Connection to 149.154.167.50 443 port [tcp/https] succeeded!
+```
+
+If this fails, your network (ISP, firewall, or hosting provider) is blocking connections to Telegram.
+
 ## Running Tests
 
 ### Using Make (Docker)
@@ -29,7 +41,7 @@ The tests are configured via environment variables. You can set these in your sh
 To run the tests in Docker, simply run `make test`. You need to export the environment variables first:
 
 ```bash
-export MTPROXY_SECRET=...
+export MTPROXY_SECRET=d7f04aa6631130af1a153e7a5e12c291
 export TELEGRAM_API_ID=12345
 export TELEGRAM_API_HASH=your_api_hash
 

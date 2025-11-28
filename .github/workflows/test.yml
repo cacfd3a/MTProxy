@@ -41,10 +41,14 @@ jobs:
 
     - name: Build MTProxy
       run: |
-        make clean && make
+        make clean && make -j$(nproc)
 
     - name: Setup and Run Proxy
       run: |
+        # Debug: Check connectivity to Telegram DC
+        echo "Checking connectivity to Telegram DC (149.154.175.50:443)..."
+        nc -zv 149.154.175.50 443 || echo "Failed to connect to Telegram DC 149.154.175.50:443"
+        
         mkdir -p mtproxy-run
         cp objs/bin/mtproto-proxy mtproxy-run/
         
@@ -60,7 +64,7 @@ jobs:
         
         # Start proxy in background
         # Use port 8443 instead of 443 to avoid permission issues or conflicts on the runner
-        ./mtproto-proxy -u nobody -p 8888 -H 8443 -S $SECRET --http-stats --aes-pwd proxy-secret proxy-multi.conf -M 1 &
+        ./mtproto-proxy -u nobody -p 8888 -H 8443 -S $SECRET --http-stats --aes-pwd proxy-secret proxy-multi.conf -M 1 -v -v &
         
         # Export SECRET for the test step
         echo "MTPROXY_SECRET=$SECRET" >> $GITHUB_ENV

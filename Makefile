@@ -132,5 +132,8 @@ tests: docker-run-help-amd64
 	@echo "Smoke test passed: amd64 image builds and binary starts (--help)."
 
 test:
-	timeout 300s docker compose -f tests/docker-compose.test.yml up --build --exit-code-from tester || (echo "Test timed out or failed"; docker compose -f tests/docker-compose.test.yml down; exit 1)
+	curl -s https://core.telegram.org/getProxyConfig -o proxy-multi.conf
+	echo "proxy_for 2 91.108.4.166:8888;" >> proxy-multi.conf
+	curl -s https://core.telegram.org/getProxySecret -o proxy-secret
+	timeout 1200s docker compose -f tests/docker-compose.test.yml up --build --exit-code-from tester || (echo "Test timed out or failed"; docker compose -f tests/docker-compose.test.yml down; exit 1)
 

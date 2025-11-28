@@ -16,7 +16,7 @@ WORKDIR /src
 COPY . .
 
 # Build the application
-RUN make clean && make
+RUN make clean && make -j$(nproc)
 
 # Runtime image
 FROM ubuntu:22.04
@@ -77,7 +77,7 @@ PROXY_TAG=\${PROXY_TAG:-}
 RANDOM_PADDING=\${RANDOM_PADDING:-}
 
 # Build command
-CMD="./mtproto-proxy -u mtproxy -p \$STATS_PORT -H \$PORT -S \$SECRET --http-stats"
+CMD="./mtproto-proxy -p \$STATS_PORT -H \$PORT -S \$SECRET --http-stats"
 
 if [ -n "\$PROXY_TAG" ]; then
     CMD="\$CMD -P \$PROXY_TAG"
@@ -87,7 +87,7 @@ if [ "\$RANDOM_PADDING" = "true" ]; then
     CMD="\$CMD -R"
 fi
 
-CMD="\$CMD --aes-pwd proxy-secret proxy-multi.conf -M \$WORKERS \$@"
+CMD="\$CMD --aes-pwd proxy-secret proxy-multi.conf -M \$WORKERS -u mtproxy \$@"
 
 echo "Starting MTProxy with command: \$CMD"
 exec \$CMD
