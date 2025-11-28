@@ -35,7 +35,7 @@ def test_http_stats():
 def test_mtproto_port():
     print("Testing MTProto port...")
     host = os.environ.get("MTPROXY_HOST", "mtproxy")
-    port = 443
+    port = int(os.environ.get("MTPROXY_PORT", 443))
     try:
         ip = socket.gethostbyname(host)
         print(f"Connecting to {ip}:{port}")
@@ -65,6 +65,7 @@ async def test_telethon():
     print(f"Connecting to proxy with secret: {secret}")
     
     host = os.environ.get("MTPROXY_HOST", "mtproxy")
+    port = int(os.environ.get("MTPROXY_PORT", 443))
 
     try:
         # Use MemorySession since we don't need to persist session
@@ -76,7 +77,7 @@ async def test_telethon():
             int(api_id), 
             api_hash,
             connection=ConnectionTcpMTProxyIntermediate,
-            proxy=(host, 443, secret)
+            proxy=(host, port, secret)
         )
         
         print("Connecting to Telegram via Proxy...")

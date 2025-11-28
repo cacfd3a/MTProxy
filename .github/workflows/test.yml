@@ -59,7 +59,8 @@ jobs:
         echo "Using secret: $SECRET"
         
         # Start proxy in background
-        ./mtproto-proxy -u nobody -p 8888 -H 443 -S $SECRET --http-stats --aes-pwd proxy-secret proxy-multi.conf -M 1 &
+        # Use port 8443 instead of 443 to avoid permission issues or conflicts on the runner
+        ./mtproto-proxy -u nobody -p 8888 -H 8443 -S $SECRET --http-stats --aes-pwd proxy-secret proxy-multi.conf -M 1 &
         
         # Export SECRET for the test step
         echo "MTPROXY_SECRET=$SECRET" >> $GITHUB_ENV
@@ -77,5 +78,6 @@ jobs:
         # We need to tell the test script to connect to localhost since we are not in docker-compose
         # We can do this by setting an env var or modifying the script to fallback to localhost
         export MTPROXY_HOST=localhost
+        export MTPROXY_PORT=8443
         python3 tests/test_proxy.py
 
