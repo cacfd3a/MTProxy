@@ -57,6 +57,18 @@ make && cd objs/bin
 
 If the build has failed, you should run `make clean` before building it again.
 
+## Testing
+
+This repository includes a comprehensive test suite. For detailed instructions, see [TESTING.md](TESTING.md).
+
+To run the tests using Docker:
+
+```bash
+# Export environment variables (see TESTING.md)
+export MTPROXY_SECRET=...
+make test
+```
+
 ## Running
 1. Obtain a secret, used to connect to telegram servers.
 ```bash

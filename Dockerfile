@@ -27,6 +27,7 @@ RUN apt-get update && apt-get install -y \
     zlib1g \
     curl \
     ca-certificates \
+    vim-common \
     && rm -rf /var/lib/apt/lists/*
 
 # Create user for running the proxy
@@ -86,7 +87,7 @@ if [ "\$RANDOM_PADDING" = "true" ]; then
     CMD="\$CMD -R"
 fi
 
-CMD="\$CMD --aes-pwd proxy-secret proxy-multi.conf -M \$WORKERS"
+CMD="\$CMD --aes-pwd proxy-secret proxy-multi.conf -M \$WORKERS \$@"
 
 echo "Starting MTProxy with command: \$CMD"
 exec \$CMD

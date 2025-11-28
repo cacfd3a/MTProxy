@@ -16,7 +16,7 @@ endif
 HOST_ARCH := $(shell arch)
 
 # Default CFLAGS and LDFLAGS
-COMMON_CFLAGS := -O3 -std=gnu11 -Wall -fno-strict-aliasing -fno-strict-overflow -fwrapv -DAES=1 -DCOMMIT=\"${COMMIT}\" -D_GNU_SOURCE=1 -D_FILE_OFFSET_BITS=64
+COMMON_CFLAGS := -O3 -std=gnu11 -Wall -fno-strict-aliasing -fno-strict-overflow -fwrapv -DAES=1 -DCOMMIT=\"${COMMIT}\" -D_GNU_SOURCE=1 -D_FILE_OFFSET_BITS=64 -Wno-array-bounds -Wno-implicit-function-declaration
 COMMON_LDFLAGS := -ggdb -rdynamic -lm -lrt -lcrypto -lz -lpthread
 
 # Architecture-specific CFLAGS
@@ -129,5 +129,8 @@ docker-run-help-amd64: docker-image-amd64
 	${DOCKER} run --rm --platform ${DOCKER_PLATFORM} --entrypoint /opt/mtproxy/mtproto-proxy ${DOCKER_TEST_IMAGE} 2>&1 | grep -q "Invoking engine"
 
 tests: docker-run-help-amd64
-	@echo "Tests passed: amd64 image builds and binary starts (--help)."
+	@echo "Smoke test passed: amd64 image builds and binary starts (--help)."
+
+test:
+	timeout 300s docker compose -f tests/docker-compose.test.yml up --build --exit-code-from tester || (echo "Test timed out or failed"; docker compose -f tests/docker-compose.test.yml down; exit 1)
 

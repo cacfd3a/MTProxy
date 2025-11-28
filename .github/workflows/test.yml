@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Build and Run Tests
+      env:
+        # Generate a random secret for testing
+        MTPROXY_SECRET: ${{ secrets.MTPROXY_SECRET }}
+        # Optional: Set dummy API credentials or use secrets if available
+        TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID || '12345' }}
+        TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH || 'dummy_hash' }}
+      run: |      
+        # Run tests passing env vars
+        make test
+
+  test-direct:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential libssl-dev zlib1g-dev git curl vim-common python3 python3-pip
+        pip3 install requests telethon python-dotenv python-socks[asyncio]
+
+    - name: Build MTProxy
+      run: |
+        make clean && make
+
+    - name: Setup and Run Proxy
+      run: |
+        mkdir -p mtproxy-run
+        cp objs/bin/mtproto-proxy mtproxy-run/
+        cp proxy-multi.conf mtproxy-run/
+        cp proxy-secret mtproxy-run/
+        
+        # Generate a secret if not present (though we copied one)
+        # or just use the one we have
+        
+        cd mtproxy-run
+        # Create a startup script wrapper or run directly in background
+        # using the same command structure as Dockerfile
+        
+        # Download config/secret if needed (likely already there from repo or build)
+        if [ ! -f proxy-secret ]; then curl -s https://core.telegram.org/getProxySecret -o proxy-secret; fi
+        if [ ! -f proxy-multi.conf ]; then curl -s https://core.telegram.org/getProxyConfig -o proxy-multi.conf; fi
+        
+        # Generate a random secret for testing if not provided
+        SECRET=$(hexdump -n 16 -e '4/4 "%08x" 1 "\n"' /dev/urandom)
+        echo "Using secret: $SECRET"
+        
+        # Start proxy in background
+        ./mtproto-proxy -u nobody -p 8888 -H 443 -S $SECRET --http-stats --aes-pwd proxy-secret proxy-multi.conf -M 1 &
+        
+        # Export SECRET for the test step
+        echo "MTPROXY_SECRET=$SECRET" >> $GITHUB_ENV
+        
+        # Wait for it to start
+        sleep 5
+
+    - name: Run Python Tests
+      env:
+        # Session path null for CI
+        TEST_SESSION_PATH: /dev/null 
+      run: |
+        # We need to tell the test script to connect to localhost since we are not in docker-compose
+        # We can do this by setting an env var or modifying the script to fallback to localhost
+        export MTPROXY_HOST=localhost
+        python3 tests/test_proxy.py
+

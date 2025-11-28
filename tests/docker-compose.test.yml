@@ -1,0 +1,24 @@
+services:
+  mtproxy:
+    platform: linux/amd64
+    build: 
+      context: ..
+      dockerfile: Dockerfile
+    # Host networking allows mtproxy to access internet without bridge NAT issues
+    # and allows tester (also on host net) to access it via localhost
+    # network_mode: "host" 
+    ports:
+      - "443:443"
+      - "8888:8888"
+    environment:
+      - SECRET=${MTPROXY_SECRET}
+      - WORKERS=1
+  tester:
+    build: .
+    # network_mode: "host"
+    environment:
+      - MTPROXY_SECRET=${MTPROXY_SECRET}
+      - TELEGRAM_API_ID=${TELEGRAM_API_ID}
+      - TELEGRAM_API_HASH=${TELEGRAM_API_HASH}
+    depends_on:
+      - mtproxy
