@@ -42,21 +42,14 @@ jobs:
       run: |
         mkdir -p mtproxy-run
         cp objs/bin/mtproto-proxy mtproxy-run/
-        cp proxy-multi.conf mtproxy-run/
-        cp proxy-secret mtproxy-run/
-        
-        # Generate a secret if not present (though we copied one)
-        # or just use the one we have
         
         cd mtproxy-run
-        # Create a startup script wrapper or run directly in background
-        # using the same command structure as Dockerfile
         
-        # Download config/secret if needed (likely already there from repo or build)
-        if [ ! -f proxy-secret ]; then curl -s https://core.telegram.org/getProxySecret -o proxy-secret; fi
-        if [ ! -f proxy-multi.conf ]; then curl -s https://core.telegram.org/getProxyConfig -o proxy-multi.conf; fi
+        # Download config/secret 
+        curl -s https://core.telegram.org/getProxySecret -o proxy-secret
+        curl -s https://core.telegram.org/getProxyConfig -o proxy-multi.conf
         
-        # Generate a random secret for testing if not provided
+        # Generate a random secret for testing
         SECRET=$(hexdump -n 16 -e '4/4 "%08x" 1 "\n"' /dev/urandom)
         echo "Using secret: $SECRET"
         
