@@ -14,12 +14,17 @@ jobs:
 
     - name: Build and Run Tests
       env:
-        # Generate a random secret for testing
+        # Use secret if available, otherwise will be generated in run step
         MTPROXY_SECRET: ${{ secrets.MTPROXY_SECRET }}
         # Optional: Set dummy API credentials or use secrets if available
         TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID || '12345' }}
         TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH || 'dummy_hash' }}
       run: |      
+        if [ -z "$MTPROXY_SECRET" ]; then
+          export MTPROXY_SECRET=$(hexdump -n 16 -e '4/4 "%08x" 1 "\n"' /dev/urandom)
+          echo "Generated random MTPROXY_SECRET for testing"
+        fi
+        
         # Run tests passing env vars
         make test
 
@@ -65,7 +70,9 @@ jobs:
     - name: Run Python Tests
       env:
         # Session path null for CI
-        TEST_SESSION_PATH: /dev/null 
+        TEST_SESSION_PATH: /dev/null
+        TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
+        TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
       run: |
         # We need to tell the test script to connect to localhost since we are not in docker-compose
         # We can do this by setting an env var or modifying the script to fallback to localhost
