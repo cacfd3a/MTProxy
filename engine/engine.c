@@ -64,7 +64,7 @@
 #include "vv/vv-io.h"
 
 
-#define DEFAULT_EPOLL_WAIT_TIMEOUT 3700
+#define DEFAULT_EPOLL_WAIT_TIMEOUT 1000
 
 char *local_progname;
 
